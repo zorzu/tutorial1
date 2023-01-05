@@ -1,0 +1,28 @@
+pipeline {
+  agent any
+
+  environment {
+    VAR1="SOMETHING"
+  }
+
+  stages {
+    stage('Build') {
+      steps {
+        echo "Building...${VAR1}"
+      }
+    }
+    stage('Test') {
+      steps {
+        echo "Testing...${VAR1}"
+      }
+    }
+    stage('Deploy') {
+      input{
+        message "Do you want to deploy?"
+      }
+      steps {
+        echo "Deploying...${VAR1}"
+      }
+    }
+  }
+}
