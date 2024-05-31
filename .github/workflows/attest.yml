@@ -12,7 +12,6 @@ env:
 
 jobs:
   secure_img_build:
-
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -42,9 +41,9 @@ jobs:
           build-args: PARENT_IMG=${{ env.PARENT_IMAGE }}
           tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
 
-     - name: Generate artifact attestation
-       uses: actions/attest-build-provenance@v1
-       with:
-         subject-name: ghcr.io/${{ github.repository }}
-         subject-digest: ${{ steps.push-step.outputs.digest }}
-         push-to-registry: true
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: ghcr.io/${{ github.repository }}
+          subject-digest: ${{ steps.push-step.outputs.digest }}
+          push-to-registry: true
