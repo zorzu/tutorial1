@@ -1,0 +1,50 @@
+name: Attest Container Image
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  PARENT_IMAGE: "gcr.io/distroless/static-debian12@sha256:8cbe18a8a9a9fefe70590dc8f6a7bc70b4bbe41f262d9dab9084337adabf6d26"
+# PARENT_IMAGE: "chainguard/static@sha256:8665c8a9fcdab0f8afc09533ee23287c7870de26064d464a10e3baa52f337734"
+
+jobs:
+  secure_img_build:
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Docker buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log into ghcr.io
+        uses: docker/login-action@master
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: ReBuild and Push Image
+        id: push-step
+        uses: docker/build-push-action@master
+        with:
+          push: true
+          build-args: PARENT_IMG=${{ env.PARENT_IMAGE }}
+          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+     - name: Generate artifact attestation
+       uses: actions/attest-build-provenance@v1
+       with:
+         subject-name: ghcr.io/${{ github.repository }}
+         subject-digest: ${{ steps.push-step.outputs.digest }}
+         push-to-registry: true
